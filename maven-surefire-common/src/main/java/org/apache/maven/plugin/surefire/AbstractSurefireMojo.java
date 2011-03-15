@@ -58,7 +58,10 @@ import org.apache.maven.surefire.util.Relocator;
 import org.apache.maven.toolchain.Toolchain;
 import org.codehaus.plexus.util.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -166,7 +169,7 @@ public abstract class AbstractSurefireMojo
     protected void logReportsDirectory()
     {
         getLog().info(
-            StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory() );
+                      StringUtils.capitalizeFirstLetter( getPluginName() ) + " report directory: " + getReportsDirectory());
     }
 
 
@@ -433,8 +436,25 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
+            excludes = new ArrayList();
+            
+            if ( getExcludeFile() != null )
+            {
+                try
+                {
+                    // Load the exclusions from the file.
+                    excludes.addAll(slurpFile(getExcludeFile()));
+                }
+                catch ( IOException e )
+                {
+                    getLog().warn( "Could not load exclusion file " + getExcludeFile() );
+                }
+            }
 
-            excludes = this.getExcludes();
+            if (this.getExcludes() != null && this.getExcludes().size() != 0)
+            {
+                excludes.addAll( this.getExcludes() );
+            }    
 
             // defaults here, qdox doesn't like the end javadoc value
             // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
@@ -442,6 +462,7 @@ public abstract class AbstractSurefireMojo
             {
                 excludes = new ArrayList( Arrays.asList( new String[]{ "**/*$*" } ) );
             }
+            
         }
         return excludes;
     }
@@ -474,8 +495,26 @@ public abstract class AbstractSurefireMojo
         }
         else
         {
-            includes = this.getIncludes();
+            includes = new ArrayList();
+            
+            if ( getIncludeFile() != null )
+            {
+                try
+                {
+                    // Load the includes from the file.
+                    includes.addAll(slurpFile(getIncludeFile()));
+                }
+                catch ( IOException e )
+                {
+                    getLog().warn( "Could not load includes file " + getIncludeFile() );
+                }
+            }
 
+            if (this.getIncludes() != null && this.getIncludes().size() != 0)
+            {
+                includes.addAll( this.getIncludes() );
+            }
+            
             // defaults here, qdox doesn't like the end javadoc value
             // Have to wrap in an ArrayList as surefire expects an ArrayList instead of a List for some reason
             if ( includes == null || includes.size() == 0 )
@@ -659,6 +698,7 @@ public abstract class AbstractSurefireMojo
         checksum.add( getTest() );
         checksum.add( getIncludes() );
         checksum.add( getExcludes() );
+        checksum.add( getExcludeFile() );
         checksum.add( getLocalRepository() );
         checksum.add( getSystemProperties() );
         checksum.add( getSystemPropertyVariables() );
@@ -1081,6 +1121,19 @@ public abstract class AbstractSurefireMojo
         {
             getLog().warn( "useSystemClassloader setting has no effect when not forking" );
         }
+    }
+
+    private List slurpFile( File textFile )
+        throws IOException
+    {
+        StringBuffer sb = new StringBuffer();
+        BufferedReader reader = new BufferedReader( new FileReader( textFile ) );
+        for ( String line = reader.readLine(); line != null; line = reader.readLine() )
+        {
+            sb.append( line );
+        }
+        reader.close();
+        return Arrays.asList(StringUtils.split(sb.toString(), ","));
     }
 
     class TestNgProviderInfo

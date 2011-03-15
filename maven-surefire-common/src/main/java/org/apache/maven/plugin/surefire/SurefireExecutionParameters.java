@@ -102,6 +102,14 @@ public interface SurefireExecutionParameters
 
     void setExcludes( List excludes );
 
+    File getExcludeFile();
+
+    void setExcludeFile( File excludeFile );
+
+    File getIncludeFile();
+
+    void setIncludeFile( File includeFile );
+
     ArtifactRepository getLocalRepository();
 
     void setLocalRepository( ArtifactRepository localRepository );

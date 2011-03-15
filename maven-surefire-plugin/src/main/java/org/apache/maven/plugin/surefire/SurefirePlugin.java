@@ -222,6 +222,24 @@ public class SurefirePlugin
     private List excludes;
 
     /**
+     * A file containing a comma-separated list of patterns to exclude from the tests run. These patterns will be added
+     * to whatever patterns are specfied explicity via &lt;excludes>.
+     * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
+     *
+     * @parameter expression="${surefire.excludeFile}"
+     */
+    private File excludeFile;
+
+    /**
+     * A file containing a comma-separated list of patterns to include in the tests run. These patterns will be added
+     * to whatever patterns are specfied explicity via &lt;includes>.
+     * This parameter is ignored if the TestNG <code>suiteXmlFiles</code> parameter is specified.
+     *
+     * @parameter expression="${surefire.includeFile}"
+     */
+    private File includeFile;
+
+    /**
      * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
      * System.getProperty("localRepository").
      *
@@ -605,6 +623,7 @@ public class SurefirePlugin
         Exception exception = null;
         ForkConfiguration forkConfiguration = null;
         int result = 0;
+                
         for ( Iterator iter = providers.iterator(); iter.hasNext(); )
         {
             ProviderInfo provider = (ProviderInfo) iter.next();
@@ -853,6 +872,26 @@ public class SurefirePlugin
     public void setExcludes( List excludes )
     {
         this.excludes = excludes;
+    }
+
+    public File getExcludeFile()
+    {
+        return excludeFile;
+    }
+
+    public void setExcludeFile( File excludeFile )
+    {
+        this.excludeFile = excludeFile;
+    }
+
+    public File getIncludeFile()
+    {
+        return includeFile;
+    }
+
+    public void setIncludeFile( File includeFile )
+    {
+        this.includeFile = includeFile;
     }
 
     public ArtifactRepository getLocalRepository()
